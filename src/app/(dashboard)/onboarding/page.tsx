@@ -1,20 +1,31 @@
-
 'use client'
 
 import { useState, useActionState } from 'react'
 import { submitApplication } from './actions'
-import { ArrowLeft, PoundSterling, Info, Loader2, Sparkles } from 'lucide-react'
+import { ArrowLeft, PoundSterling, Info, Loader2, Sparkles, Check, Home, ClipboardCheck } from 'lucide-react'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 
 const initialState = {
     error: '',
 }
 
 const conditionOptions = [
-    { id: 'cleaning', label: 'Cleaning Needed', cost: 150 },
-    { id: 'painting', label: 'Painting Needed', cost: 200 },
-    { id: 'holes', label: 'Holes/Damage', cost: 100 },
-    { id: 'flooring', label: 'Flooring Needed', cost: 250 },
+    { id: 'cleaning', label: 'Cleaning', cost: 150, emoji: '🧹' },
+    { id: 'painting', label: 'Painting', cost: 200, emoji: '🎨' },
+    { id: 'holes', label: 'Holes/Damage', cost: 100, emoji: '🔨' },
+    { id: 'flooring', label: 'Flooring', cost: 250, emoji: '🪵' },
+]
+
+const steps = [
+    { id: 1, label: 'Deposit', icon: PoundSterling },
+    { id: 2, label: 'Property', icon: Home },
+    { id: 3, label: 'Review', icon: ClipboardCheck },
 ]
 
 export default function OnboardingPage() {
@@ -78,24 +89,52 @@ export default function OnboardingPage() {
         }
     }
 
+    const prevStep = () => {
+        setStep(s => Math.max(1, s - 1))
+    }
+
     return (
-        <div className="max-w-xl mx-auto">
+        <div className="max-w-2xl mx-auto">
             {/* Back Button */}
-            <Link href="/dashboard" className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-6 group">
+            <Link href="/dashboard" className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-6 group transition-colors">
                 <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                Back
+                <span className="font-medium">Back to Dashboard</span>
             </Link>
 
-            <div className="bg-white rounded-2xl shadow-lg border overflow-hidden">
-                {/* Progress Bar */}
-                <div className="h-1 bg-slate-100">
-                    <div
-                        className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
-                        style={{ width: `${(step / 2) * 100}%` }}
-                    />
+            {/* Step Indicator */}
+            <div className="mb-8">
+                <div className="flex items-center justify-between">
+                    {steps.map((s, index) => (
+                        <div key={s.id} className="flex items-center">
+                            <div className="flex flex-col items-center">
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${step > s.id
+                                        ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+                                        : step === s.id
+                                            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                                            : 'bg-slate-200 text-slate-400'
+                                    }`}>
+                                    {step > s.id ? (
+                                        <Check className="w-5 h-5" />
+                                    ) : (
+                                        <s.icon className="w-5 h-5" />
+                                    )}
+                                </div>
+                                <span className={`mt-2 text-sm font-medium ${step >= s.id ? 'text-slate-900' : 'text-slate-400'
+                                    }`}>
+                                    {s.label}
+                                </span>
+                            </div>
+                            {index < steps.length - 1 && (
+                                <div className={`w-20 md:w-32 h-1 mx-2 rounded-full transition-colors ${step > s.id ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-slate-200'
+                                    }`} />
+                            )}
+                        </div>
+                    ))}
                 </div>
+            </div>
 
-                <div className="p-8">
+            <Card className="border-0 shadow-xl overflow-hidden">
+                <CardContent className="p-8">
                     <form action={formAction}>
                         {step === 1 && (
                             <div className="space-y-8">
@@ -106,19 +145,19 @@ export default function OnboardingPage() {
                                 </div>
 
                                 {/* Deposit Amount */}
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-slate-700">Total Deposit Amount (£)</label>
+                                <div className="space-y-3">
+                                    <Label className="text-sm font-semibold text-slate-700">Total Deposit Amount</Label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <PoundSterling className="w-5 h-5 text-slate-400" />
+                                            <span className="text-xl font-semibold text-slate-400">£</span>
                                         </div>
-                                        <input
+                                        <Input
                                             name="depositAmount"
                                             type="number"
                                             value={formData.depositAmount}
                                             onChange={handleChange}
                                             required
-                                            className="w-full pl-12 pr-4 py-4 text-xl font-semibold border-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                            className="pl-10 h-14 text-2xl font-bold border-2 focus:border-blue-500"
                                             placeholder="1500"
                                         />
                                     </div>
@@ -126,56 +165,82 @@ export default function OnboardingPage() {
 
                                 {/* Property Condition */}
                                 <div className="space-y-3">
-                                    <label className="text-sm font-semibold text-slate-700">What condition is the property in?</label>
+                                    <Label className="text-sm font-semibold text-slate-700">Property condition (select all that apply)</Label>
                                     <div className="grid grid-cols-2 gap-3">
                                         {conditionOptions.map(option => (
                                             <button
                                                 key={option.id}
                                                 type="button"
                                                 onClick={() => toggleCondition(option.id)}
-                                                className={`p-4 rounded-xl border-2 text-sm font-medium transition-all ${formData.conditions.includes(option.id)
-                                                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                                        : 'border-slate-200 hover:border-slate-300 text-slate-600'
+                                                className={`p-4 rounded-xl border-2 text-left transition-all duration-200 ${formData.conditions.includes(option.id)
+                                                        ? 'border-blue-500 bg-blue-50 shadow-md'
+                                                        : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                                                     }`}
                                             >
-                                                {option.label}
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-2xl">{option.emoji}</span>
+                                                    <div>
+                                                        <p className={`font-medium ${formData.conditions.includes(option.id) ? 'text-blue-700' : 'text-slate-700'
+                                                            }`}>
+                                                            {option.label}
+                                                        </p>
+                                                        <p className="text-xs text-slate-400">Est. £{option.cost}</p>
+                                                    </div>
+                                                </div>
+                                                {formData.conditions.includes(option.id) && (
+                                                    <div className="absolute top-2 right-2">
+                                                        <Check className="w-4 h-4 text-blue-500" />
+                                                    </div>
+                                                )}
                                             </button>
                                         ))}
                                     </div>
-                                    <p className="text-xs text-slate-400">Select all that apply. Be honest - our inspector will verify.</p>
-                                </div>
-
-                                {/* Info Box */}
-                                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3">
-                                    <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                                    <p className="text-sm text-amber-800">
-                                        By proceeding, you agree to allow a DepositFlow artisan to inspect the property 48 hours before checkout.
-                                    </p>
+                                    <p className="text-xs text-slate-400">Be honest - our inspector will verify before checkout.</p>
                                 </div>
 
                                 {/* Estimated Return Preview */}
                                 {depositAmount > 0 && (
-                                    <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl p-6 space-y-3">
-                                        <div className="flex items-center gap-2 text-sm font-medium text-slate-600">
-                                            <Sparkles className="w-4 h-4 text-blue-500" />
-                                            Estimated Return Preview
+                                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 p-6 text-white">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl" />
+                                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-500/20 rounded-full blur-2xl" />
+                                        <div className="relative">
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <Sparkles className="w-5 h-5 text-blue-400" />
+                                                <span className="text-sm font-medium text-slate-300">Estimated Return</span>
+                                            </div>
+                                            <div className="flex items-end justify-between">
+                                                <div>
+                                                    <p className="text-sm text-slate-400 mb-1">Cash to you today</p>
+                                                    <p className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                                                        £{estimatedReturn.toLocaleString()}
+                                                    </p>
+                                                </div>
+                                                <div className="text-right text-sm text-slate-400 space-y-1">
+                                                    <p>Deposit: £{depositAmount.toLocaleString()}</p>
+                                                    <p>Repairs: -£{estimatedRepairs}</p>
+                                                    <p>Service (12%): -£{serviceFee}</p>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="flex justify-between items-end">
-                                            <span className="text-slate-600">Cash to You Today</span>
-                                            <span className="text-3xl font-bold text-blue-600">£{estimatedReturn}</span>
-                                        </div>
-                                        <p className="text-xs text-slate-400">Final amount calculated after property details</p>
                                     </div>
                                 )}
 
+                                {/* Info Alert */}
+                                <Alert className="bg-amber-50 border-amber-200">
+                                    <Info className="h-4 w-4 text-amber-600" />
+                                    <AlertDescription className="text-amber-800">
+                                        By proceeding, you agree to allow a DepositFlow artisan to inspect the property 48 hours before checkout.
+                                    </AlertDescription>
+                                </Alert>
+
                                 {/* CTA */}
-                                <button
+                                <Button
                                     type="button"
                                     onClick={nextStep}
-                                    className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition transform active:scale-[0.98]"
+                                    className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-blue-500/25"
                                 >
-                                    Calculate Offer
-                                </button>
+                                    Continue to Property Details
+                                </Button>
                             </div>
                         )}
 
@@ -190,36 +255,36 @@ export default function OnboardingPage() {
                                 {/* Address Fields */}
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-slate-700">Street Address</label>
-                                        <input
+                                        <Label className="text-sm font-medium text-slate-700">Street Address</Label>
+                                        <Input
                                             name="address"
                                             value={formData.address}
                                             onChange={handleChange}
                                             required
-                                            className="w-full p-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                            className="h-12"
                                             placeholder="123 High Street, Flat 4"
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium text-slate-700">City</label>
-                                            <input
+                                            <Label className="text-sm font-medium text-slate-700">City</Label>
+                                            <Input
                                                 name="city"
                                                 value={formData.city}
                                                 onChange={handleChange}
                                                 required
-                                                className="w-full p-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                                className="h-12"
                                                 placeholder="London"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium text-slate-700">Postcode</label>
-                                            <input
+                                            <Label className="text-sm font-medium text-slate-700">Postcode</Label>
+                                            <Input
                                                 name="postcode"
                                                 value={formData.postcode}
                                                 onChange={handleChange}
                                                 required
-                                                className="w-full p-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                                className="h-12"
                                                 placeholder="E1 6AN"
                                             />
                                         </div>
@@ -230,12 +295,12 @@ export default function OnboardingPage() {
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium text-slate-700">TDS Scheme</label>
+                                            <Label className="text-sm font-medium text-slate-700">TDS Scheme</Label>
                                             <select
                                                 name="tdsScheme"
                                                 value={formData.tdsScheme}
                                                 onChange={handleChange}
-                                                className="w-full p-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                                className="w-full h-12 px-3 border rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                                             >
                                                 <option value="DPS">DPS</option>
                                                 <option value="TDS">TDS</option>
@@ -243,27 +308,48 @@ export default function OnboardingPage() {
                                             </select>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium text-slate-700">Reference Number</label>
-                                            <input
+                                            <Label className="text-sm font-medium text-slate-700">Reference Number</Label>
+                                            <Input
                                                 name="tdsReference"
                                                 value={formData.tdsReference}
                                                 onChange={handleChange}
                                                 required
-                                                className="w-full p-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                                className="h-12"
                                                 placeholder="DAN-123456"
                                             />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-slate-700">Tenancy End Date</label>
-                                        <input
+                                        <Label className="text-sm font-medium text-slate-700">Tenancy End Date</Label>
+                                        <Input
                                             name="tenancyEndDate"
                                             type="date"
                                             value={formData.tenancyEndDate}
                                             onChange={handleChange}
                                             required
-                                            className="w-full p-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                            className="h-12"
                                         />
+                                    </div>
+                                </div>
+
+                                {/* Summary Card */}
+                                <div className="bg-slate-50 rounded-xl p-4 space-y-2">
+                                    <p className="text-sm font-medium text-slate-700">Your Offer Summary</p>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-slate-500">Deposit Amount</span>
+                                        <span className="font-semibold">£{depositAmount.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-slate-500">Estimated Repairs</span>
+                                        <span className="font-semibold text-red-600">-£{estimatedRepairs}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-slate-500">Service Fee (12%)</span>
+                                        <span className="font-semibold text-red-600">-£{serviceFee}</span>
+                                    </div>
+                                    <div className="border-t pt-2 flex justify-between">
+                                        <span className="font-medium text-slate-700">Cash to You</span>
+                                        <span className="font-bold text-lg text-green-600">£{estimatedReturn.toLocaleString()}</span>
                                     </div>
                                 </div>
 
@@ -281,41 +367,42 @@ export default function OnboardingPage() {
                                 <input type="hidden" name="flooringNeeded" value={formData.conditions.includes('flooring') ? 'true' : 'false'} />
 
                                 {state?.error && (
-                                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
-                                        {state.error}
-                                    </div>
+                                    <Alert variant="destructive">
+                                        <AlertDescription>{state.error}</AlertDescription>
+                                    </Alert>
                                 )}
 
                                 {/* Buttons */}
-                                <div className="flex gap-3 pt-4">
-                                    <button
+                                <div className="flex gap-3 pt-2">
+                                    <Button
                                         type="button"
-                                        onClick={() => setStep(1)}
-                                        className="flex-1 py-3 rounded-xl border-2 font-semibold text-slate-600 hover:bg-slate-50 transition"
+                                        onClick={prevStep}
+                                        variant="outline"
+                                        className="flex-1 h-12"
                                     >
                                         Back
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
                                         type="submit"
                                         disabled={isSubmitting}
                                         onClick={() => setIsSubmitting(true)}
-                                        className="flex-[2] bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition flex items-center justify-center gap-2 disabled:opacity-50"
+                                        className="flex-[2] h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-blue-500/25"
                                     >
                                         {isSubmitting ? (
                                             <>
-                                                <Loader2 className="w-5 h-5 animate-spin" />
+                                                <Loader2 className="w-5 h-5 animate-spin mr-2" />
                                                 Processing...
                                             </>
                                         ) : (
                                             'Get My Instant Offer'
                                         )}
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         )}
                     </form>
-                </div>
-            </div>
+                </CardContent>
+            </Card>
         </div>
     )
 }
