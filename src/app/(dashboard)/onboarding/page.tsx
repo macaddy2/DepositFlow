@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useActionState } from 'react'
+import { useState, useActionState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { submitApplication } from './actions'
 import { ArrowLeft, PoundSterling, Info, Loader2, Sparkles, Check, Home, ClipboardCheck } from 'lucide-react'
 import Link from 'next/link'
@@ -13,6 +14,7 @@ import { Badge } from '@/components/ui/badge'
 
 const initialState = {
     error: '',
+    success: false,
 }
 
 const conditionOptions = [
@@ -29,9 +31,16 @@ const steps = [
 ]
 
 export default function OnboardingPage() {
+    const router = useRouter()
     const [step, setStep] = useState(1)
-    const [state, formAction] = useActionState(submitApplication, initialState)
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [state, formAction, isPending] = useActionState(submitApplication, initialState)
+
+    // Handle successful submission
+    useEffect(() => {
+        if (state?.success) {
+            router.push('/offer')
+        }
+    }, [state, router])
 
     const [formData, setFormData] = useState({
         depositAmount: '',
@@ -108,10 +117,10 @@ export default function OnboardingPage() {
                         <div key={s.id} className="flex items-center">
                             <div className="flex flex-col items-center">
                                 <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${step > s.id
-                                        ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
-                                        : step === s.id
-                                            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
-                                            : 'bg-slate-200 text-slate-400'
+                                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+                                    : step === s.id
+                                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                                        : 'bg-slate-200 text-slate-400'
                                     }`}>
                                     {step > s.id ? (
                                         <Check className="w-5 h-5" />
@@ -173,8 +182,8 @@ export default function OnboardingPage() {
                                                 type="button"
                                                 onClick={() => toggleCondition(option.id)}
                                                 className={`p-4 rounded-xl border-2 text-left transition-all duration-200 ${formData.conditions.includes(option.id)
-                                                        ? 'border-blue-500 bg-blue-50 shadow-md'
-                                                        : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                                    ? 'border-blue-500 bg-blue-50 shadow-md'
+                                                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                                                     }`}
                                             >
                                                 <div className="flex items-center gap-3">
@@ -384,11 +393,10 @@ export default function OnboardingPage() {
                                     </Button>
                                     <Button
                                         type="submit"
-                                        disabled={isSubmitting}
-                                        onClick={() => setIsSubmitting(true)}
+                                        disabled={isPending}
                                         className="flex-[2] h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-blue-500/25"
                                     >
-                                        {isSubmitting ? (
+                                        {isPending ? (
                                             <>
                                                 <Loader2 className="w-5 h-5 animate-spin mr-2" />
                                                 Processing...

@@ -2,13 +2,17 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
 
 export async function submitApplication(prevState: any, formData: FormData) {
+    console.log('--- submitApplication STARTED ---')
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: 'Not authenticated' }
+    if (!user) {
+        console.log('submitApplication: No user found')
+        return { error: 'Not authenticated', success: false }
+    }
+    console.log('submitApplication: User authenticated', user.id)
 
     const address = formData.get('address') as string
     const city = formData.get('city') as string
@@ -18,6 +22,8 @@ export async function submitApplication(prevState: any, formData: FormData) {
     const tdsReference = formData.get('tdsReference') as string
     const tenancyEndDate = formData.get('tenancyEndDate') as string
 
+    console.log('submitApplication: Form data parsed', { address, depositAmount })
+
     // Condition flags
     const cleaningNeeded = formData.get('cleaningNeeded') === 'true'
     const paintingNeeded = formData.get('paintingNeeded') === 'true'
@@ -25,6 +31,7 @@ export async function submitApplication(prevState: any, formData: FormData) {
     const flooringNeeded = formData.get('flooringNeeded') === 'true'
 
     // 1. Create Property
+    console.log('submitApplication: Creating property...')
     const { data: property, error: propError } = await supabase
         .from('properties')
         .insert({
@@ -35,9 +42,14 @@ export async function submitApplication(prevState: any, formData: FormData) {
         .select()
         .single()
 
-    if (propError) return { error: propError.message }
+    if (propError) {
+        console.error('submitApplication: Property error', propError)
+        return { error: propError.message, success: false }
+    }
+    console.log('submitApplication: Property created', property.id)
 
     // 2. Create Tenancy with condition flags
+    console.log('submitApplication: Creating tenancy...')
     const { data: tenancy, error: tenError } = await supabase
         .from('tenancies')
         .insert({
@@ -56,7 +68,11 @@ export async function submitApplication(prevState: any, formData: FormData) {
         .select()
         .single()
 
-    if (tenError) return { error: tenError.message }
+    if (tenError) {
+        console.error('submitApplication: Tenancy error', tenError)
+        return { error: tenError.message, success: false }
+    }
+    console.log('submitApplication: Tenancy created', tenancy.id)
 
     // 3. Calculate and create instant offer
     let estimatedRepairCost = 0
@@ -68,6 +84,7 @@ export async function submitApplication(prevState: any, formData: FormData) {
     const serviceFee = Math.round(depositAmount * 0.12)
     const advanceAmount = Math.max(0, depositAmount - estimatedRepairCost - serviceFee)
 
+    console.log('submitApplication: Creating offer...')
     const { error: offerError } = await supabase
         .from('offers')
         .insert({
@@ -79,8 +96,13 @@ export async function submitApplication(prevState: any, formData: FormData) {
             expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString() // 48 hours
         })
 
-    if (offerError) return { error: offerError.message }
+    if (offerError) {
+        console.error('submitApplication: Offer error', offerError)
+        return { error: offerError.message, success: false }
+    }
+    console.log('submitApplication: Offer created. Success.')
 
-    return redirect('/offer')
+    // Return success state instead of redirect (redirect doesn't work with useActionState)
+    return { success: true, tenancyId: tenancy.id }
 }
 
