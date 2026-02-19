@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+import { sendOfferCreatedEmail, sendDeedSignedEmail } from '@/lib/email'
 
 export async function signDeed(offerId: string, signatureData: string) {
     const supabase = await createClient()
@@ -14,13 +15,14 @@ export async function signDeed(offerId: string, signatureData: string) {
     }
 
     // 2. Verify ownership of the offer via the tenancy
-    // We need to join offers -> tenancies -> user_id to check ownership
     const { data: offer, error: fetchError } = await supabase
         .from('offers')
         .select(`
             *,
             tenancies (
-                user_id
+                user_id,
+                deposit_amount,
+                profiles ( email, full_name )
             )
         `)
         .eq('id', offerId)
@@ -31,41 +33,48 @@ export async function signDeed(offerId: string, signatureData: string) {
     }
 
     // Check ownership
-    // @ts-ignore - Supabase query returns an object for single relation
-    if (offer.tenancies?.user_id !== user.id) {
+    if ((offer.tenancies as { user_id: string } | null)?.user_id !== user.id) {
         throw new Error('Unauthorized access to this offer')
     }
 
     // Check status
     if (offer.status !== 'pending') {
-        throw new Error('This offer is no longer pending')
+        if (offer.status === 'accepted') throw new Error('This offer has already been signed')
+        throw new Error('This offer is no longer available')
     }
 
-    // 3. Update offer status to accepted
+    // Check expiry
+    if (offer.expires_at && new Date(offer.expires_at) < new Date()) {
+        throw new Error('This offer has expired')
+    }
+
+    // 3. Mark offer as accepted and store the signature
     const { error: updateError } = await supabase
         .from('offers')
-        .update({ status: 'accepted' })
+        .update({
+            status: 'accepted',
+            signed_at: new Date().toISOString(),
+            signature_data: signatureData,
+        })
         .eq('id', offerId)
 
     if (updateError) {
-        throw new Error('Failed to update offer status')
+        throw new Error('Failed to record signature: ' + updateError.message)
     }
 
-    // 4. Create signed contract record
-    const { error: contractError } = await supabase
-        .from('contracts')
-        .insert({
-            offer_id: offerId,
-            status: 'signed',
-            signed_at: new Date().toISOString()
-            // In a real app, we'd store the signatureData image/blob here too
-        })
-
-    if (contractError) {
-        // Rollback offer status if contract creation fails would be ideal here...
-        // For MVP, we log and throw
-        console.error('Failed to create contract record:', contractError)
-        throw new Error('Failed to record signature')
+    // 4. Send confirmation email (best-effort)
+    try {
+        const tenancy = offer.tenancies as { deposit_amount: number; profiles?: { email?: string; full_name?: string } | null } | null
+        const profile = tenancy?.profiles
+        if (user.email) {
+            await sendDeedSignedEmail({
+                to: user.email,
+                name: profile?.full_name ?? user.email,
+                advanceAmount: offer.advance_amount,
+            })
+        }
+    } catch (emailErr) {
+        console.error('Failed to send deed-signed email:', emailErr)
     }
 
     revalidatePath('/dashboard')

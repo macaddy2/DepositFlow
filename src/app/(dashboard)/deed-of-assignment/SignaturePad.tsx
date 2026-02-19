@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Eraser, PenLine } from 'lucide-react'
+import { Loader2, Eraser, PenLine, AlertCircle } from 'lucide-react'
 import { signDeed } from './actions'
 
 export default function SignaturePad({ offerId }: { offerId: string }) {
@@ -10,6 +10,7 @@ export default function SignaturePad({ offerId }: { offerId: string }) {
     const [isDrawing, setIsDrawing] = useState(false)
     const [hasSignature, setHasSignature] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
         const canvas = canvasRef.current
@@ -58,13 +59,15 @@ export default function SignaturePad({ offerId }: { offerId: string }) {
 
     const handleSubmit = async () => {
         if (!canvasRef.current) return
+        setError(null)
         setLoading(true)
 
         try {
-            const signatureData = canvasRef.current.toDataURL() // Capture signature
+            const signatureData = canvasRef.current.toDataURL()
             await signDeed(offerId, signatureData)
-        } catch (error) {
-            alert('Failed to sign deed: ' + (error instanceof Error ? error.message : 'Unknown error'))
+            // signDeed redirects on success — if we reach here something went wrong
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to sign deed. Please try again.')
             setLoading(false)
         }
     }
@@ -124,6 +127,14 @@ export default function SignaturePad({ offerId }: { offerId: string }) {
                     By signing, you agree to execute this Deed electronically.
                 </p>
             </div>
+
+            {/* Inline Error */}
+            {error && (
+                <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                    <p>{error}</p>
+                </div>
+            )}
 
             {/* Actions */}
             <button

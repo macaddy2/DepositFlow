@@ -1,6 +1,7 @@
 
 import Link from 'next/link'
-import { CheckCircle, Clock, Users, Home, Banknote, PartyPopper } from 'lucide-react'
+import { createClient } from '@/utils/supabase/server'
+import { CheckCircle, Clock, Users, Home, Banknote, PartyPopper, PoundSterling } from 'lucide-react'
 
 export default async function StatusPage({
     searchParams
@@ -9,6 +10,32 @@ export default async function StatusPage({
 }) {
     const { signed } = await searchParams
     const justSigned = signed === 'true'
+
+    // Fetch the user's accepted offer for real data
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    let advanceAmount: number | null = null
+    let propertyAddress: string | null = null
+
+    if (user) {
+        const { data: tenancy } = await supabase
+            .from('tenancies')
+            .select('*, offers(*), properties(*)')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single()
+
+        const offer = (tenancy?.offers as any[])?.[0]
+        if (offer?.status === 'accepted') {
+            advanceAmount = offer.advance_amount
+        }
+        const property = tenancy?.properties as any
+        if (property) {
+            propertyAddress = `${property.address_line_1}, ${property.city}`
+        }
+    }
 
     return (
         <div className="max-w-2xl mx-auto space-y-8 py-8">
@@ -32,15 +59,22 @@ export default async function StatusPage({
             </div>
 
             {/* Payment Status Card */}
-            {justSigned && (
+            {advanceAmount !== null && (
                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                             <Banknote className="w-6 h-6 text-blue-600" />
                         </div>
-                        <div>
+                        <div className="flex-1">
                             <p className="font-semibold text-slate-900">Payment Processing</p>
                             <p className="text-sm text-slate-600">Funds will arrive within 2 hours during business hours</p>
+                            {propertyAddress && (
+                                <p className="text-xs text-slate-400 mt-1">{propertyAddress}</p>
+                            )}
+                        </div>
+                        <div className="text-right">
+                            <p className="text-xs text-slate-400 mb-0.5">Advance</p>
+                            <p className="text-2xl font-bold text-blue-600">£{advanceAmount.toLocaleString()}</p>
                         </div>
                     </div>
                 </div>

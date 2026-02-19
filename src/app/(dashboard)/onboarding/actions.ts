@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { z } from 'zod'
 import { CONDITION_OPTIONS, calculateOffer, TDS_SCHEMES } from '@/lib/constants'
+import { sendOfferCreatedEmail } from '@/lib/email'
 
 export type ActionState = {
     error: string | Record<string, string[]> | null;
@@ -120,6 +121,19 @@ export async function submitApplication(prevState: ActionState, formData: FormDa
 
     if (offerError) {
         return { error: offerError.message, success: false }
+    }
+
+    // 4. Send offer notification email (best-effort)
+    try {
+        const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
+        await sendOfferCreatedEmail({
+            to: user.email!,
+            name: user.email!,
+            advanceAmount,
+            offerExpiresAt: expiresAt,
+        })
+    } catch (emailErr) {
+        console.error('Failed to send offer-created email:', emailErr)
     }
 
     return { error: null, success: true, tenancyId: tenancy.id }

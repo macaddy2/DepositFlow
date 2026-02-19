@@ -22,6 +22,8 @@ export default async function OfferPage() {
 
     const offer = tenancy?.offers?.[0]
     const property = tenancy?.properties
+    const isExpired = offer?.expires_at ? new Date(offer.expires_at) < new Date() : false
+    const isAccepted = offer?.status === 'accepted'
 
     if (!offer) {
         return (
@@ -56,7 +58,9 @@ export default async function OfferPage() {
                     </div>
 
                     <h1 className="text-2xl font-bold text-slate-900">Your Instant Offer</h1>
-                    <p className="text-green-600 font-medium">Available immediately</p>
+                    <p className={`font-medium ${isExpired ? 'text-red-500' : isAccepted ? 'text-green-600' : 'text-green-600'}`}>
+                        {isExpired ? 'Offer expired' : isAccepted ? 'Accepted ✓' : 'Available immediately'}
+                    </p>
                 </div>
 
                 {/* Breakdown */}
@@ -136,16 +140,33 @@ export default async function OfferPage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3">
-                <AcceptOfferButton offerId={offer.id} tenancy={tenancy} advanceAmount={offer.advance_amount} />
-                <Link
-                    href="/onboarding"
-                    className="flex-1 py-4 px-6 rounded-xl border-2 font-semibold text-slate-600 hover:bg-slate-50 transition flex items-center justify-center gap-2"
-                >
-                    <RefreshCw className="w-5 h-5" />
-                    Recalculate
-                </Link>
-            </div>
+            {isExpired ? (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                    <p className="text-red-700 font-semibold">This offer has expired</p>
+                    <p className="text-sm text-red-500 mt-1">Offers are valid for 48 hours. Please restart your application to get a new offer.</p>
+                    <Link href="/onboarding" className="inline-flex items-center gap-2 mt-3 bg-red-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-red-700 transition text-sm">
+                        Start New Application
+                    </Link>
+                </div>
+            ) : isAccepted ? (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+                    <p className="text-green-700 font-semibold">You have already accepted this offer</p>
+                    <Link href="/status" className="inline-flex items-center gap-2 mt-3 bg-green-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-green-700 transition text-sm">
+                        View Status
+                    </Link>
+                </div>
+            ) : (
+                <div className="flex gap-3">
+                    <AcceptOfferButton offerId={offer.id} tenancy={tenancy} advanceAmount={offer.advance_amount} />
+                    <Link
+                        href="/onboarding"
+                        className="flex-1 py-4 px-6 rounded-xl border-2 font-semibold text-slate-600 hover:bg-slate-50 transition flex items-center justify-center gap-2"
+                    >
+                        <RefreshCw className="w-5 h-5" />
+                        Recalculate
+                    </Link>
+                </div>
+            )}
 
             {/* Terms */}
             <p className="text-xs text-center text-slate-400">
