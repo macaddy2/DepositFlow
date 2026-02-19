@@ -2,37 +2,58 @@
 
 import { useState, useActionState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { submitApplication } from './actions'
-import { ArrowLeft, PoundSterling, Info, Loader2, Sparkles, Check, Home, ClipboardCheck } from 'lucide-react'
+import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import { PoundSterling, Home, CheckCircle2, Shield, AlertCircle, Loader2, ChevronRight, ChevronLeft, Check, ArrowLeft, Sparkles, Info, Edit2 } from 'lucide-react'
+import { submitApplication, type ActionState } from './actions'
 import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Card, CardContent } from '@/components/ui/card'
+import { CONDITION_OPTIONS, calculateOffer, type ConditionId, TDS_SCHEMES } from '@/lib/constants'
 
-const initialState = {
-    error: '',
-    success: false,
+// Initial form state
+interface FormData {
+    depositAmount: string
+    tdsScheme: string
+    tdsReference: string
+    address: string
+    city: string
+    postcode: string
+    tenancyEndDate: string
+    conditions: ConditionId[]
 }
 
-const conditionOptions = [
-    { id: 'cleaning', label: 'Cleaning', cost: 150, emoji: '🧹' },
-    { id: 'painting', label: 'Painting', cost: 200, emoji: '🎨' },
-    { id: 'holes', label: 'Holes/Damage', cost: 100, emoji: '🔨' },
-    { id: 'flooring', label: 'Flooring', cost: 250, emoji: '🪵' },
-]
+const initialFormData: FormData = {
+    depositAmount: '',
+    tdsScheme: TDS_SCHEMES[0],
+    tdsReference: '',
+    address: '',
+    city: '',
+    postcode: '',
+    tenancyEndDate: '',
+    conditions: [],
+}
+
+type StepError = string | null
+
+const initialState: ActionState = {
+    error: null,
+    success: false,
+}
 
 const steps = [
     { id: 1, label: 'Deposit', icon: PoundSterling },
     { id: 2, label: 'Property', icon: Home },
-    { id: 3, label: 'Review', icon: ClipboardCheck },
+    { id: 3, label: 'Review', icon: CheckCircle2 },
 ]
 
 export default function OnboardingPage() {
     const router = useRouter()
     const [step, setStep] = useState(1)
+    const [formData, setFormData] = useState<FormData>(initialFormData)
+    const [stepError, setStepError] = useState<StepError>(null)
     const [state, formAction, isPending] = useActionState(submitApplication, initialState)
 
     // Handle successful submission
@@ -42,22 +63,12 @@ export default function OnboardingPage() {
         }
     }, [state, router])
 
-    const [formData, setFormData] = useState({
-        depositAmount: '',
-        address: '',
-        city: '',
-        postcode: '',
-        tdsScheme: 'DPS',
-        tdsReference: '',
-        tenancyEndDate: '',
-        conditions: [] as string[],
-    })
-
+    // Handle form field changes
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
     }
 
-    const toggleCondition = (conditionId: string) => {
+    const toggleCondition = (conditionId: ConditionId) => {
         setFormData(prev => ({
             ...prev,
             conditions: prev.conditions.includes(conditionId)
@@ -68,24 +79,20 @@ export default function OnboardingPage() {
 
     // Calculate estimated return
     const depositAmount = parseFloat(formData.depositAmount) || 0
-    const estimatedRepairs = formData.conditions.reduce((total, id) => {
-        const option = conditionOptions.find(o => o.id === id)
-        return total + (option?.cost || 0)
-    }, 0)
-    const serviceFee = Math.round(depositAmount * 0.12)
-    const estimatedReturn = Math.max(0, depositAmount - estimatedRepairs - serviceFee)
+    const { estimatedRepairCost: estimatedRepairs, serviceFee, advanceAmount: estimatedReturn } =
+        calculateOffer(depositAmount, formData.conditions)
 
     const validateStep = (currentStep: number) => {
         if (currentStep === 1) {
             if (!formData.depositAmount || parseFloat(formData.depositAmount) < 100) {
-                alert('Please enter a valid deposit amount (minimum £100)')
+                setStepError('Please enter a valid deposit amount (minimum £100)')
                 return false
             }
         }
         if (currentStep === 2) {
             const { address, city, postcode, tdsReference, tenancyEndDate } = formData
             if (!address || !city || !postcode || !tdsReference || !tenancyEndDate) {
-                alert('Please fill in all required fields')
+                setStepError('Please fill in all required fields')
                 return false
             }
         }
@@ -93,12 +100,14 @@ export default function OnboardingPage() {
     }
 
     const nextStep = () => {
+        setStepError(null)
         if (validateStep(step)) {
             setStep(s => s + 1)
         }
     }
 
     const prevStep = () => {
+        setStepError(null)
         setStep(s => Math.max(1, s - 1))
     }
 
@@ -176,12 +185,12 @@ export default function OnboardingPage() {
                                 <div className="space-y-3">
                                     <Label className="text-sm font-semibold text-slate-700">Property condition (select all that apply)</Label>
                                     <div className="grid grid-cols-2 gap-3">
-                                        {conditionOptions.map(option => (
+                                        {CONDITION_OPTIONS.map(option => (
                                             <button
                                                 key={option.id}
                                                 type="button"
                                                 onClick={() => toggleCondition(option.id)}
-                                                className={`p-4 rounded-xl border-2 text-left transition-all duration-200 ${formData.conditions.includes(option.id)
+                                                className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${formData.conditions.includes(option.id)
                                                     ? 'border-blue-500 bg-blue-50 shadow-md'
                                                     : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                                                     }`}
@@ -234,6 +243,25 @@ export default function OnboardingPage() {
                                     </div>
                                 )}
 
+                                {/* Inline Error Message */}
+                                {stepError && (
+                                    <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
+                                        <AlertCircle className="h-4 w-4" />
+                                        <AlertDescription>{stepError}</AlertDescription>
+                                    </Alert>
+                                )}
+                                {/* Server Error Message */}
+                                {state.error && (
+                                    <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
+                                        <AlertCircle className="h-4 w-4" />
+                                        <AlertTitle>Error</AlertTitle>
+                                        <AlertDescription>
+                                            {typeof state.error === 'string'
+                                                ? state.error
+                                                : Object.values(state.error).flat().join(', ')}
+                                        </AlertDescription>
+                                    </Alert>
+                                )}
                                 {/* Info Alert */}
                                 <Alert className="bg-amber-50 border-amber-200">
                                     <Info className="h-4 w-4 text-amber-600" />
@@ -375,9 +403,155 @@ export default function OnboardingPage() {
                                 <input type="hidden" name="holesNeeded" value={formData.conditions.includes('holes') ? 'true' : 'false'} />
                                 <input type="hidden" name="flooringNeeded" value={formData.conditions.includes('flooring') ? 'true' : 'false'} />
 
+                                {/* Inline Step Error */}
+                                {stepError && (
+                                    <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
+                                        <AlertCircle className="h-4 w-4" />
+                                        <AlertDescription>{stepError}</AlertDescription>
+                                    </Alert>
+                                )}
                                 {state?.error && (
                                     <Alert variant="destructive">
-                                        <AlertDescription>{state.error}</AlertDescription>
+                                        <AlertDescription>
+                                            {typeof state.error === 'string'
+                                                ? state.error
+                                                : Object.values(state.error).flat().join(', ')}
+                                        </AlertDescription>
+                                    </Alert>
+                                )}
+
+                                {/* Buttons */}
+                                <div className="flex gap-3 pt-2">
+                                    <Button
+                                        type="button"
+                                        onClick={prevStep}
+                                        variant="outline"
+                                        className="flex-1 h-12"
+                                    >
+                                        Back
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        onClick={nextStep}
+                                        className="flex-[2] h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-blue-500/25"
+                                    >
+                                        Review Application
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+
+                        {step === 3 && (
+                            <div className="space-y-6">
+                                {/* Header */}
+                                <div className="text-center">
+                                    <h1 className="text-2xl font-bold text-slate-900">Review Your Application</h1>
+                                    <p className="text-slate-500 mt-1">Please confirm your details before submitting.</p>
+                                </div>
+
+                                {/* Deposit Summary */}
+                                <div className="bg-slate-50 rounded-xl p-5 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="font-semibold text-slate-800">Deposit Details</h3>
+                                        <button type="button" onClick={() => setStep(1)} className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
+                                            <Edit2 className="w-3 h-3" /> Edit
+                                        </button>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3 text-sm">
+                                        <div>
+                                            <span className="text-slate-500">Deposit Amount</span>
+                                            <p className="font-semibold text-slate-900">£{depositAmount.toLocaleString()}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-slate-500">Conditions</span>
+                                            <p className="font-semibold text-slate-900">
+                                                {formData.conditions.length > 0
+                                                    ? formData.conditions.map(c => CONDITION_OPTIONS.find(o => o.id === c)?.label).join(', ')
+                                                    : 'None selected'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Property Summary */}
+                                <div className="bg-slate-50 rounded-xl p-5 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="font-semibold text-slate-800">Property Details</h3>
+                                        <button type="button" onClick={() => setStep(2)} className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
+                                            <Edit2 className="w-3 h-3" /> Edit
+                                        </button>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3 text-sm">
+                                        <div>
+                                            <span className="text-slate-500">Address</span>
+                                            <p className="font-semibold text-slate-900">{formData.address}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-slate-500">City</span>
+                                            <p className="font-semibold text-slate-900">{formData.city}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-slate-500">Postcode</span>
+                                            <p className="font-semibold text-slate-900">{formData.postcode}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-slate-500">TDS Scheme</span>
+                                            <p className="font-semibold text-slate-900">{formData.tdsScheme}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-slate-500">TDS Reference</span>
+                                            <p className="font-semibold text-slate-900">{formData.tdsReference}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-slate-500">Tenancy End Date</span>
+                                            <p className="font-semibold text-slate-900">{new Date(formData.tenancyEndDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Offer Summary */}
+                                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 p-6 text-white">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl" />
+                                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-500/20 rounded-full blur-2xl" />
+                                    <div className="relative">
+                                        <p className="text-sm font-medium text-slate-300 mb-4">Your Estimated Offer</p>
+                                        <div className="flex items-end justify-between">
+                                            <div>
+                                                <p className="text-sm text-slate-400 mb-1">Cash to you today</p>
+                                                <p className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                                                    £{estimatedReturn.toLocaleString()}
+                                                </p>
+                                            </div>
+                                            <div className="text-right text-sm text-slate-400 space-y-1">
+                                                <p>Deposit: £{depositAmount.toLocaleString()}</p>
+                                                <p>Repairs: -£{estimatedRepairs}</p>
+                                                <p>Service (12%): -£{serviceFee}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Hidden Fields */}
+                                <input type="hidden" name="depositAmount" value={formData.depositAmount} />
+                                <input type="hidden" name="address" value={formData.address} />
+                                <input type="hidden" name="city" value={formData.city} />
+                                <input type="hidden" name="postcode" value={formData.postcode} />
+                                <input type="hidden" name="tdsScheme" value={formData.tdsScheme} />
+                                <input type="hidden" name="tdsReference" value={formData.tdsReference} />
+                                <input type="hidden" name="tenancyEndDate" value={formData.tenancyEndDate} />
+                                <input type="hidden" name="cleaningNeeded" value={formData.conditions.includes('cleaning') ? 'true' : 'false'} />
+                                <input type="hidden" name="paintingNeeded" value={formData.conditions.includes('painting') ? 'true' : 'false'} />
+                                <input type="hidden" name="holesNeeded" value={formData.conditions.includes('holes') ? 'true' : 'false'} />
+                                <input type="hidden" name="flooringNeeded" value={formData.conditions.includes('flooring') ? 'true' : 'false'} />
+
+                                {state?.error && (
+                                    <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
+                                        <AlertCircle className="h-4 w-4" />
+                                        <AlertDescription>
+                                            {typeof state.error === 'string'
+                                                ? state.error
+                                                : Object.values(state.error).flat().join(', ')}
+                                        </AlertDescription>
                                     </Alert>
                                 )}
 

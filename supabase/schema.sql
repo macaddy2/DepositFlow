@@ -31,6 +31,7 @@ create table public.properties (
 );
 alter table public.properties enable row level security;
 create policy "Properties are viewable by authenticated users" on public.properties for select using (auth.role() = 'authenticated');
+create policy "Authenticated users can insert properties" on public.properties for insert with check (auth.role() = 'authenticated');
 
 -- Tenancies
 create table public.tenancies (
@@ -94,6 +95,7 @@ create table public.offers (
 );
 alter table public.offers enable row level security;
 create policy "Users can view own offers" on public.offers for select using ( exists ( select 1 from public.tenancies where id = offers.tenancy_id and user_id = auth.uid() ) );
+create policy "Users can insert own offers" on public.offers for insert with check ( exists ( select 1 from public.tenancies where id = offers.tenancy_id and user_id = auth.uid() ) );
 
 -- Deed of Assignments (for transferring deposit rights)
 create table public.deed_of_assignments (

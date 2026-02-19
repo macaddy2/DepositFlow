@@ -2,12 +2,13 @@
 import Link from 'next/link'
 import { CheckCircle, Clock, Users, Home, Banknote, PartyPopper } from 'lucide-react'
 
-export default function StatusPage({
+export default async function StatusPage({
     searchParams
 }: {
-    searchParams: { signed?: string }
+    searchParams: Promise<{ signed?: string }>
 }) {
-    const justSigned = searchParams.signed === 'true'
+    const { signed } = await searchParams
+    const justSigned = signed === 'true'
 
     return (
         <div className="max-w-2xl mx-auto space-y-8 py-8">

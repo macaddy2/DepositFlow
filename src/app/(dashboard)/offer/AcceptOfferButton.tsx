@@ -25,18 +25,9 @@ export default function AcceptOfferButton({ offerId, tenancy, advanceAmount }: A
 
     const handleAccept = () => {
         setLoading(true)
-        // Navigate to Deed of Assignment page with offer details
-        const params = new URLSearchParams({
-            offerId,
-            depositAmount: tenancy.deposit_amount.toString(),
-            advanceAmount: advanceAmount.toString(),
-            tdsScheme: tenancy.tds_scheme,
-            tdsReference: tenancy.tds_reference,
-            propertyAddress: tenancy.properties
-                ? `${tenancy.properties.address_line_1}, ${tenancy.properties.city}, ${tenancy.properties.postcode}`
-                : 'Property Address'
-        })
-        router.push(`/deed-of-assignment?${params.toString()}`)
+        // Navigate to Deed of Assignment page with ONLY offerId
+        // The page will fetch the rest of the data securely server-side
+        router.push(`/deed-of-assignment?offerId=${offerId}`)
     }
 
     return (

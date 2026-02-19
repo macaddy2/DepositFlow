@@ -273,7 +273,7 @@ export default function ProfilePage() {
             <Separator />
             <div className="flex items-center justify-between text-sm text-slate-400">
                 <p>Account ID: {user?.id?.substring(0, 8)}...</p>
-                <p>Member since recently</p>
+                <p>Member since {profile.created_at ? new Date(profile.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : 'recently'}</p>
             </div>
         </div>
     )

@@ -80,7 +80,7 @@ export default function Home() {
                 <div className="p-3 bg-purple-100 rounded-full">
                   <CheckCircle2 className="h-6 w-6 text-purple-600" />
                 </div>
-                <h2 className="text-xl font-bold">Professional Checout</h2>
+                <h2 className="text-xl font-bold">Professional Checkout</h2>
                 <p className="text-gray-500">
                   Our "Strike Team" cleans and repairs your flat to guarantee the landlord approves the release.
                 </p>

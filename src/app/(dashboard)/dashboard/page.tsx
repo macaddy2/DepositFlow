@@ -1,188 +1,145 @@
-'use client'
-
 import Link from 'next/link'
-import { Plus, TrendingUp, Clock, Wallet, ArrowRight, FileCheck } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
+import { Plus, ArrowRight, Clock, CheckCircle2, AlertCircle, Building2 } from 'lucide-react'
+import { createClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
 
-const statsCards = [
-    {
-        title: 'Active Applications',
-        value: '0',
-        change: 'Start your first application',
-        icon: FileCheck,
-        color: 'from-blue-500 to-blue-600',
-        bgColor: 'bg-blue-50',
-    },
-    {
-        title: 'Pending Payouts',
-        value: '£0',
-        change: 'No pending payouts',
-        icon: Clock,
-        color: 'from-amber-500 to-orange-500',
-        bgColor: 'bg-amber-50',
-    },
-    {
-        title: 'Total Received',
-        value: '£0',
-        change: 'Complete an application to get started',
-        icon: Wallet,
-        color: 'from-green-500 to-emerald-500',
-        bgColor: 'bg-green-50',
-    },
-]
+export default async function DashboardPage() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-const recentApplications = [
-    // Empty state - no applications yet
-]
+    if (!user) {
+        redirect('/login')
+    }
 
-export default function DashboardPage() {
+    // Fetch user's tenancies and offers
+    const { data: tenancies } = await supabase
+        .from('tenancies')
+        .select(`
+            *,
+            offers (*),
+            properties (*)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+    const activeApplications = tenancies || []
+    const offerCount = activeApplications.filter(t => t.offers?.length > 0).length
+    const totalValue = activeApplications.reduce((sum, t) => {
+        const offer = t.offers?.[0]
+        return sum + (offer?.advance_amount || 0)
+    }, 0)
+
     return (
         <div className="space-y-8">
-            {/* Welcome Header */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            {/* Welcome Section */}
+            <div className="flex justify-between items-end">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900">Welcome back! 👋</h1>
-                    <p className="text-slate-500 mt-1">Manage your deposit advances and applications.</p>
+                    <h1 className="text-3xl font-bold text-slate-900">Welcome back</h1>
+                    <p className="text-slate-500 mt-2">Here&apos;s what&apos;s happening with your deposits.</p>
                 </div>
-                <Button asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 shadow-lg shadow-blue-500/25">
-                    <Link href="/onboarding">
-                        <Plus className="h-4 w-4 mr-2" />
-                        New Application
-                    </Link>
-                </Button>
+                <Link
+                    href="/onboarding"
+                    className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition flex items-center gap-2 shadow-lg shadow-blue-500/25"
+                >
+                    <Plus className="w-5 h-5" />
+                    New Application
+                </Link>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {statsCards.map((stat) => (
-                    <Card key={stat.title} className="overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow duration-300">
-                        <CardContent className="p-6">
-                            <div className="flex items-start justify-between">
-                                <div className="space-y-2">
-                                    <p className="text-sm font-medium text-slate-500">{stat.title}</p>
-                                    <p className="text-3xl font-bold text-slate-900">{stat.value}</p>
-                                    <p className="text-xs text-slate-400">{stat.change}</p>
-                                </div>
-                                <div className={`p-3 rounded-xl ${stat.bgColor}`}>
-                                    <stat.icon className={`h-6 w-6 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`} style={{ color: stat.color.includes('blue') ? '#3b82f6' : stat.color.includes('amber') ? '#f59e0b' : '#10b981' }} />
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
-
-            {/* Quick Actions */}
-            <div className="grid gap-6 md:grid-cols-2">
-                {/* CTA Card */}
-                <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-xl">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl" />
-                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl" />
-                    <CardHeader className="relative">
-                        <CardTitle className="text-xl font-bold">Get Your Deposit Advanced</CardTitle>
-                        <CardDescription className="text-slate-300">
-                            Moving out soon? We&apos;ll advance your deposit so you&apos;re never stuck paying double.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="relative">
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3 text-sm text-slate-300">
-                                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold">1</div>
-                                <span>Tell us about your tenancy</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-sm text-slate-300">
-                                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold">2</div>
-                                <span>Accept your instant offer</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-sm text-slate-300">
-                                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold">3</div>
-                                <span>Receive cash same-day</span>
-                            </div>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white p-6 rounded-2xl border shadow-sm">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="p-3 bg-blue-100 rounded-xl text-blue-600">
+                            <Building2 className="w-6 h-6" />
                         </div>
-                        <Button asChild className="mt-6 w-full bg-white text-slate-900 hover:bg-slate-100 font-semibold">
-                            <Link href="/onboarding">
-                                Start Now
-                                <ArrowRight className="h-4 w-4 ml-2" />
-                            </Link>
-                        </Button>
-                    </CardContent>
-                </Card>
-
-                {/* Application Progress Card */}
-                <Card className="border-0 shadow-md">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                            <TrendingUp className="h-5 w-5 text-blue-500" />
-                            Your Progress
-                        </CardTitle>
-                        <CardDescription>Complete your profile to get started</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-slate-600">Profile completion</span>
-                                <span className="font-medium text-slate-900">25%</span>
-                            </div>
-                            <Progress value={25} className="h-2" />
-                        </div>
-
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
-                                <span className="text-sm font-medium text-green-800">✓ Account created</span>
-                                <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100">Complete</Badge>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                                <span className="text-sm font-medium text-slate-600">Add personal details</span>
-                                <Badge variant="outline" className="text-slate-500">Pending</Badge>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                                <span className="text-sm font-medium text-slate-600">Add bank details</span>
-                                <Badge variant="outline" className="text-slate-500">Pending</Badge>
-                            </div>
-                        </div>
-
-                        <Button asChild variant="outline" className="w-full">
-                            <Link href="/profile">
-                                Complete Profile
-                            </Link>
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Recent Applications Table */}
-            <Card className="border-0 shadow-md">
-                <CardHeader className="border-b bg-slate-50/50">
-                    <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg font-semibold">Recent Applications</CardTitle>
-                        <Badge variant="secondary">0 total</Badge>
+                        <span className="text-slate-500 font-medium">Active Applications</span>
                     </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                    {recentApplications.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-16 text-center">
-                            <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-                                <FileCheck className="h-8 w-8 text-slate-400" />
+                    <p className="text-3xl font-bold text-slate-900">{activeApplications.length}</p>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl border shadow-sm">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="p-3 bg-green-100 rounded-xl text-green-600">
+                            <CheckCircle2 className="w-6 h-6" />
+                        </div>
+                        <span className="text-slate-500 font-medium">Offers Received</span>
+                    </div>
+                    <p className="text-3xl font-bold text-slate-900">{offerCount}</p>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl border shadow-sm">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="p-3 bg-purple-100 rounded-xl text-purple-600">
+                            <AlertCircle className="w-6 h-6" />
+                        </div>
+                        <span className="text-slate-500 font-medium">Total Value</span>
+                    </div>
+                    <p className="text-3xl font-bold text-slate-900">£{totalValue.toLocaleString()}</p>
+                </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
+                <div className="p-6 border-b flex justify-between items-center">
+                    <h2 className="text-lg font-bold text-slate-900">Recent Applications</h2>
+                    <Link href="#" className="text-blue-600 text-sm font-medium hover:underline">View all</Link>
+                </div>
+
+                <div className="divide-y text-start">
+                    {activeApplications.length === 0 ? (
+                        <div className="p-12 text-center text-slate-500">
+                            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Building2 className="w-8 h-8 text-slate-400" />
                             </div>
-                            <p className="text-slate-600 font-medium">No applications yet</p>
-                            <p className="text-sm text-slate-400 mt-1">Start your first application to see it here</p>
-                            <Button asChild className="mt-4" variant="outline">
-                                <Link href="/onboarding">
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    Start Application
-                                </Link>
-                            </Button>
+                            <p>No applications yet. Start a new one to unlock your deposit!</p>
+                            <Link href="/onboarding" className="text-blue-600 font-semibold hover:underline mt-2 inline-block">Start Application</Link>
                         </div>
                     ) : (
-                        <div className="divide-y">
-                            {/* Table rows would go here */}
-                        </div>
+                        activeApplications.map((tenancy) => {
+                            const property = tenancy.properties
+                            const offer = tenancy.offers?.[0]
+                            const status = offer?.status === 'accepted' ? 'Completed' : offer ? 'Offer Ready' : 'Processing'
+
+                            return (
+                                <div key={tenancy.id} className="p-6 hover:bg-slate-50 transition flex items-center justify-between group">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 group-hover:bg-white group-hover:shadow-sm transition">
+                                            <Building2 className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-slate-900">
+                                                {property ? `${property.address_line_1}, ${property.postcode}` : 'Unknown Property'}
+                                            </h3>
+                                            <p className="text-sm text-slate-500 flex items-center gap-2">
+                                                <Clock className="w-3 h-3" />
+                                                {new Date(tenancy.created_at).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-6">
+                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${status === 'Completed' ? 'bg-green-100 text-green-700' :
+                                            status === 'Offer Ready' ? 'bg-blue-100 text-blue-700' :
+                                                'bg-amber-100 text-amber-700'
+                                            }`}>
+                                            {status}
+                                        </span>
+                                        <span className="font-bold text-slate-900">
+                                            {offer ? `£${offer.advance_amount}` : '—'}
+                                        </span>
+                                        <Link
+                                            href={offer?.status === 'accepted' ? '/status?signed=true' : offer ? '/offer' : '#'}
+                                            className="p-2 text-slate-400 hover:text-blue-600 transition"
+                                        >
+                                            <ArrowRight className="w-5 h-5" />
+                                        </Link>
+                                    </div>
+                                </div>
+                            )
+                        })
                     )}
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         </div>
     )
 }
