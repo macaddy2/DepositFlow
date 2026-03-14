@@ -89,7 +89,7 @@ export default function SignaturePad({ offerId }: { offerId: string }) {
                 <label className="block text-sm font-semibold text-slate-700">
                     Sign below to accept terms
                 </label>
-                <div className="border-2 border-dashed border-slate-300 rounded-xl overflow-hidden bg-slate-50 touch-none relative group hover:border-blue-400 transition-colors">
+                <div className="border-2 border-dashed border-slate-300 rounded-xl overflow-hidden bg-slate-50 touch-none relative group hover:border-[#028090] transition-colors">
                     <canvas
                         ref={canvasRef}
                         width={600}

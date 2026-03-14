@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Home, FileText, User, LogOut, Sparkles, Bell, Settings } from 'lucide-react'
+import { Home, FileText, User, LogOut, ShieldCheck, Bell, Settings, Video, ClipboardCheck, Wrench, FileCheck2 } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -33,22 +33,23 @@ export default async function DashboardLayout({
 
     const navItems = [
         { href: '/dashboard', icon: Home, label: 'Dashboard' },
-        { href: '/onboarding', icon: FileText, label: 'New Application' },
+        { href: '/onboarding', icon: FileText, label: 'New Case' },
+        { href: '/video-walkthrough', icon: Video, label: 'Video Walkthrough' },
+        { href: '/assessment', icon: ClipboardCheck, label: 'Assessment' },
+        { href: '/repairs', icon: Wrench, label: 'Repairs' },
+        { href: '/evidence', icon: FileCheck2, label: 'Evidence' },
         { href: '/profile', icon: User, label: 'Profile' },
     ]
 
     return (
         <div className="flex h-screen bg-slate-100">
             {/* Sidebar */}
-            <aside className="hidden w-64 flex-col bg-gradient-to-b from-slate-900 to-slate-800 md:flex">
+            <aside className="hidden w-64 flex-col bg-gradient-to-b from-[#1A2332] to-[#0f1820] md:flex">
                 {/* Logo */}
                 <div className="flex h-16 items-center gap-2 px-6">
-                    <div className="relative">
-                        <Sparkles className="w-6 h-6 text-blue-400" />
-                        <div className="absolute inset-0 blur-sm bg-blue-400/50 rounded-full" />
-                    </div>
-                    <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                        DepositFlow
+                    <ShieldCheck className="w-6 h-6 text-[#02C39A]" />
+                    <span className="text-xl font-bold text-white">
+                        Deposit<span className="text-[#02C39A]">Guard</span>
                     </span>
                 </div>
 
@@ -60,7 +61,7 @@ export default async function DashboardLayout({
                             href={item.href}
                             className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-white/10 hover:text-white transition-all duration-200"
                         >
-                            <item.icon className="h-5 w-5 text-slate-400 group-hover:text-blue-400 transition-colors" />
+                            <item.icon className="h-5 w-5 text-slate-400 group-hover:text-[#02C39A] transition-colors" />
                             <span className="font-medium">{item.label}</span>
                         </Link>
                     ))}
@@ -71,8 +72,8 @@ export default async function DashboardLayout({
                 {/* User Section */}
                 <div className="p-4 space-y-3">
                     <div className="flex items-center gap-3 px-2 py-2 rounded-lg bg-white/5">
-                        <Avatar className="h-9 w-9 border-2 border-blue-400/50">
-                            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-semibold text-sm">
+                        <Avatar className="h-9 w-9 border-2 border-[#02C39A]/50">
+                            <AvatarFallback className="bg-gradient-to-br from-[#028090] to-[#02C39A] text-white font-semibold text-sm">
                                 {userInitial}
                             </AvatarFallback>
                         </Avatar>
@@ -98,8 +99,8 @@ export default async function DashboardLayout({
             <div className="flex flex-col flex-1">
                 <header className="md:hidden flex items-center justify-between h-14 px-4 bg-white border-b">
                     <div className="flex items-center gap-2">
-                        <Sparkles className="w-5 h-5 text-blue-500" />
-                        <span className="font-bold text-slate-900">DepositFlow</span>
+                        <ShieldCheck className="w-5 h-5 text-[#028090]" />
+                        <span className="font-bold text-[#1A2332]">Deposit<span className="text-[#028090]">Guard</span></span>
                     </div>
                     <div className="flex items-center gap-2">
                         <Button variant="ghost" size="icon-sm">

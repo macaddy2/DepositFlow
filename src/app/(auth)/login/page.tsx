@@ -41,19 +41,19 @@ export default function LoginPage() {
     return (
         <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
             {/* Ambient glow effects */}
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
-            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#028090]/20 rounded-full blur-3xl" />
+            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#02C39A]/20 rounded-full blur-3xl" />
 
             <Card className="relative w-full max-w-md bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl">
                 <CardHeader className="text-center space-y-4 pb-2">
                     {/* Logo */}
                     <div className="mx-auto flex items-center justify-center gap-2">
                         <div className="relative">
-                            <Sparkles className="w-8 h-8 text-blue-400" />
-                            <div className="absolute inset-0 blur-sm bg-blue-400/50 rounded-full" />
+                            <Sparkles className="w-8 h-8 text-[#02C39A]" />
+                            <div className="absolute inset-0 blur-sm bg-[#02C39A]/50 rounded-full" />
                         </div>
-                        <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                            DepositFlow
+                        <span className="text-2xl font-bold bg-gradient-to-r from-[#028090] to-[#02C39A] bg-clip-text text-transparent">
+                            DepositGuard
                         </span>
                     </div>
                     <div>
@@ -79,7 +79,7 @@ export default function LoginPage() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-blue-400 focus:ring-blue-400/20"
+                                    className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-[#02C39A] focus:ring-[#02C39A]/20"
                                 />
                             </div>
                         </div>
@@ -87,7 +87,7 @@ export default function LoginPage() {
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold py-5 shadow-lg shadow-blue-500/25 transition-all duration-300 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-[0.98]"
+                            className="w-full bg-[#028090] hover:bg-[#026d7a] text-white font-semibold py-5 shadow-lg shadow-[#028090]/25 transition-all duration-300 hover:shadow-[#028090]/40 hover:scale-[1.02] active:scale-[0.98]"
                         >
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {loading ? 'Sending link...' : 'Sign in with Email'}

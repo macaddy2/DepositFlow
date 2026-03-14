@@ -34,7 +34,7 @@ export default function AcceptOfferButton({ offerId, tenancy, advanceAmount }: A
         <button
             onClick={handleAccept}
             disabled={loading}
-            className="flex-[2] bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-6 rounded-xl font-bold hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-200 transition transform active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50"
+            className="flex-[2] bg-[#028090] text-white py-4 px-6 rounded-xl font-bold hover:bg-[#026d7a] shadow-lg shadow-[#028090]/25 transition transform active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50"
         >
             {loading ? (
                 <>
