@@ -102,7 +102,7 @@ create table public.deed_of_assignments (
   id uuid default uuid_generate_v4() primary key,
   offer_id uuid references public.offers(id) on delete cascade not null,
   tenant_id uuid references public.profiles(id) on delete cascade not null,
-  assignee_name text default 'DepositFlow Ltd' not null,
+  assignee_name text default 'DepositGuard Ltd' not null,
   deposit_amount decimal(10, 2) not null,
   advance_amount decimal(10, 2) not null,
   tds_scheme text not null,

@@ -18,9 +18,12 @@ const ApplicationSchema = z.object({
     depositAmount: z.coerce.number().min(100, 'Deposit must be at least £100'),
     tdsScheme: z.enum(Object.values(TDS_SCHEMES) as [string, ...string[]]),
     tdsReference: z.string().min(5, 'Invalid TDS reference'),
+    landlordName: z.string().optional(),
+    agentName: z.string().optional(),
     tenancyEndDate: z.string().refine((date) => new Date(date) > new Date(), {
         message: 'Tenancy end date must be in the future',
     }),
+    noticeDate: z.string().optional(),
     cleaningNeeded: z.coerce.boolean(),
     paintingNeeded: z.coerce.boolean(),
     holesNeeded: z.coerce.boolean(),
@@ -43,7 +46,10 @@ export async function submitApplication(prevState: ActionState, formData: FormDa
         depositAmount: formData.get('depositAmount'),
         tdsScheme: formData.get('tdsScheme'),
         tdsReference: formData.get('tdsReference'),
+        landlordName: formData.get('landlordName') || undefined,
+        agentName: formData.get('agentName') || undefined,
         tenancyEndDate: formData.get('tenancyEndDate'),
+        noticeDate: formData.get('noticeDate') || undefined,
         cleaningNeeded: formData.get('cleaningNeeded') === 'true',
         paintingNeeded: formData.get('paintingNeeded') === 'true',
         holesNeeded: formData.get('holesNeeded') === 'true',
@@ -83,14 +89,17 @@ export async function submitApplication(prevState: ActionState, formData: FormDa
             user_id: user.id,
             property_id: property.id,
             deposit_amount: data.depositAmount,
+            landlord_name: data.landlordName || null,
+            agent_name: data.agentName || null,
             tds_scheme: data.tdsScheme,
             tds_reference: data.tdsReference,
             tenancy_end_date: data.tenancyEndDate,
+            notice_date: data.noticeDate || null,
             cleaning_needed: data.cleaningNeeded,
             painting_needed: data.paintingNeeded,
             holes_needed: data.holesNeeded,
             flooring_needed: data.flooringNeeded,
-            status: 'offer_generated'
+            status: 'registered'
         })
         .select()
         .single()

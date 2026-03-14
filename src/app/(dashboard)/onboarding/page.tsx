@@ -22,6 +22,9 @@ interface FormData {
     city: string
     postcode: string
     tenancyEndDate: string
+    landlordName: string
+    agentName: string
+    noticeDate: string
     conditions: ConditionId[]
 }
 
@@ -33,6 +36,9 @@ const initialFormData: FormData = {
     city: '',
     postcode: '',
     tenancyEndDate: '',
+    landlordName: '',
+    agentName: '',
+    noticeDate: '',
     conditions: [],
 }
 
@@ -128,7 +134,7 @@ export default function OnboardingPage() {
                                 <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${step > s.id
                                     ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
                                     : step === s.id
-                                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                                        ? 'bg-gradient-to-r from-[#028090] to-[#02C39A] text-white shadow-lg shadow-[#028090]/30'
                                         : 'bg-slate-200 text-slate-400'
                                     }`}>
                                     {step > s.id ? (
@@ -158,7 +164,7 @@ export default function OnboardingPage() {
                             <div className="space-y-8">
                                 {/* Header */}
                                 <div className="text-center">
-                                    <h1 className="text-2xl font-bold text-slate-900">Let&apos;s estimate your return</h1>
+                                    <h1 className="text-2xl font-bold text-slate-900">Let&apos;s assess your deposit risk</h1>
                                     <p className="text-slate-500 mt-2">We need a few details about your current tenancy.</p>
                                 </div>
 
@@ -175,7 +181,7 @@ export default function OnboardingPage() {
                                             value={formData.depositAmount}
                                             onChange={handleChange}
                                             required
-                                            className="pl-10 h-14 text-2xl font-bold border-2 focus:border-blue-500"
+                                            className="pl-10 h-14 text-2xl font-bold border-2 focus:border-[#028090]"
                                             placeholder="1500"
                                         />
                                     </div>
@@ -191,14 +197,14 @@ export default function OnboardingPage() {
                                                 type="button"
                                                 onClick={() => toggleCondition(option.id)}
                                                 className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${formData.conditions.includes(option.id)
-                                                    ? 'border-blue-500 bg-blue-50 shadow-md'
+                                                    ? 'border-[#028090] bg-[#028090]/5 shadow-md'
                                                     : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                                                     }`}
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <span className="text-2xl">{option.emoji}</span>
                                                     <div>
-                                                        <p className={`font-medium ${formData.conditions.includes(option.id) ? 'text-blue-700' : 'text-slate-700'
+                                                        <p className={`font-medium ${formData.conditions.includes(option.id) ? 'text-[#028090]' : 'text-slate-700'
                                                             }`}>
                                                             {option.label}
                                                         </p>
@@ -207,7 +213,7 @@ export default function OnboardingPage() {
                                                 </div>
                                                 {formData.conditions.includes(option.id) && (
                                                     <div className="absolute top-2 right-2">
-                                                        <Check className="w-4 h-4 text-blue-500" />
+                                                        <Check className="w-4 h-4 text-[#028090]" />
                                                     </div>
                                                 )}
                                             </button>
@@ -219,24 +225,24 @@ export default function OnboardingPage() {
                                 {/* Estimated Return Preview */}
                                 {depositAmount > 0 && (
                                     <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 p-6 text-white">
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl" />
-                                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-500/20 rounded-full blur-2xl" />
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#028090]/20 rounded-full blur-2xl" />
+                                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#02C39A]/20 rounded-full blur-2xl" />
                                         <div className="relative">
                                             <div className="flex items-center gap-2 mb-4">
-                                                <Sparkles className="w-5 h-5 text-blue-400" />
-                                                <span className="text-sm font-medium text-slate-300">Estimated Return</span>
+                                                <Sparkles className="w-5 h-5 text-[#02C39A]" />
+                                                <span className="text-sm font-medium text-slate-300">Deposit Risk Estimate</span>
                                             </div>
                                             <div className="flex items-end justify-between">
                                                 <div>
-                                                    <p className="text-sm text-slate-400 mb-1">Cash to you today</p>
-                                                    <p className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                                                        £{estimatedReturn.toLocaleString()}
+                                                    <p className="text-sm text-slate-400 mb-1">Estimated deposit at risk</p>
+                                                    <p className="text-4xl font-bold bg-gradient-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">
+                                                        £{estimatedRepairs.toLocaleString()}
                                                     </p>
                                                 </div>
                                                 <div className="text-right text-sm text-slate-400 space-y-1">
                                                     <p>Deposit: £{depositAmount.toLocaleString()}</p>
-                                                    <p>Repairs: -£{estimatedRepairs}</p>
-                                                    <p>Service (12%): -£{serviceFee}</p>
+                                                    <p>Est. repairs: £{estimatedRepairs}</p>
+                                                    <p>Potential recovery: £{estimatedReturn.toLocaleString()}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -266,7 +272,7 @@ export default function OnboardingPage() {
                                 <Alert className="bg-amber-50 border-amber-200">
                                     <Info className="h-4 w-4 text-amber-600" />
                                     <AlertDescription className="text-amber-800">
-                                        By proceeding, you agree to allow a DepositFlow artisan to inspect the property 48 hours before checkout.
+                                        By proceeding, you agree to allow a DepositGuard artisan to inspect the property 48 hours before checkout.
                                     </AlertDescription>
                                 </Alert>
 
@@ -274,7 +280,7 @@ export default function OnboardingPage() {
                                 <Button
                                     type="button"
                                     onClick={nextStep}
-                                    className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-blue-500/25"
+                                    className="w-full h-12 bg-gradient-to-r from-[#028090] to-[#02C39A] hover:from-[#02a5b5] hover:to-[#04d9ad] text-white font-bold shadow-lg shadow-[#028090]/25"
                                 >
                                     Continue to Property Details
                                 </Button>
@@ -337,7 +343,7 @@ export default function OnboardingPage() {
                                                 name="tdsScheme"
                                                 value={formData.tdsScheme}
                                                 onChange={handleChange}
-                                                className="w-full h-12 px-3 border rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                className="w-full h-12 px-3 border rounded-md bg-white focus:ring-2 focus:ring-[#028090] focus:border-[#028090] outline-none"
                                             >
                                                 <option value="DPS">DPS</option>
                                                 <option value="TDS">TDS</option>
@@ -369,24 +375,56 @@ export default function OnboardingPage() {
                                     </div>
                                 </div>
 
+                                {/* Landlord & Agent Details */}
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-medium text-slate-700">Landlord Name</Label>
+                                            <Input
+                                                name="landlordName"
+                                                value={formData.landlordName}
+                                                onChange={handleChange}
+                                                className="h-12"
+                                                placeholder="John Smith"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-medium text-slate-700">Agent Name <span className="text-slate-400">(optional)</span></Label>
+                                            <Input
+                                                name="agentName"
+                                                value={formData.agentName}
+                                                onChange={handleChange}
+                                                className="h-12"
+                                                placeholder="ABC Lettings"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium text-slate-700">Notice Date <span className="text-slate-400">(optional)</span></Label>
+                                        <Input
+                                            name="noticeDate"
+                                            type="date"
+                                            value={formData.noticeDate}
+                                            onChange={handleChange}
+                                            className="h-12"
+                                        />
+                                    </div>
+                                </div>
+
                                 {/* Summary Card */}
                                 <div className="bg-slate-50 rounded-xl p-4 space-y-2">
-                                    <p className="text-sm font-medium text-slate-700">Your Offer Summary</p>
+                                    <p className="text-sm font-medium text-slate-700">Risk Summary</p>
                                     <div className="flex justify-between text-sm">
                                         <span className="text-slate-500">Deposit Amount</span>
                                         <span className="font-semibold">£{depositAmount.toLocaleString()}</span>
                                     </div>
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-slate-500">Estimated Repairs</span>
-                                        <span className="font-semibold text-red-600">-£{estimatedRepairs}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-slate-500">Service Fee (12%)</span>
-                                        <span className="font-semibold text-red-600">-£{serviceFee}</span>
+                                        <span className="text-slate-500">Estimated Repair Cost</span>
+                                        <span className="font-semibold text-amber-600">£{estimatedRepairs}</span>
                                     </div>
                                     <div className="border-t pt-2 flex justify-between">
-                                        <span className="font-medium text-slate-700">Cash to You</span>
-                                        <span className="font-bold text-lg text-green-600">£{estimatedReturn.toLocaleString()}</span>
+                                        <span className="font-medium text-slate-700">Deposit at Risk</span>
+                                        <span className="font-bold text-lg text-red-600">£{estimatedRepairs}</span>
                                     </div>
                                 </div>
 
@@ -402,6 +440,9 @@ export default function OnboardingPage() {
                                 <input type="hidden" name="paintingNeeded" value={formData.conditions.includes('painting') ? 'true' : 'false'} />
                                 <input type="hidden" name="holesNeeded" value={formData.conditions.includes('holes') ? 'true' : 'false'} />
                                 <input type="hidden" name="flooringNeeded" value={formData.conditions.includes('flooring') ? 'true' : 'false'} />
+                                <input type="hidden" name="landlordName" value={formData.landlordName} />
+                                <input type="hidden" name="agentName" value={formData.agentName} />
+                                <input type="hidden" name="noticeDate" value={formData.noticeDate} />
 
                                 {/* Inline Step Error */}
                                 {stepError && (
@@ -433,7 +474,7 @@ export default function OnboardingPage() {
                                     <Button
                                         type="button"
                                         onClick={nextStep}
-                                        className="flex-[2] h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-blue-500/25"
+                                        className="flex-[2] h-12 bg-gradient-to-r from-[#028090] to-[#02C39A] hover:from-[#02a5b5] hover:to-[#04d9ad] text-white font-bold shadow-lg shadow-[#028090]/25"
                                     >
                                         Review Application
                                     </Button>
@@ -453,7 +494,7 @@ export default function OnboardingPage() {
                                 <div className="bg-slate-50 rounded-xl p-5 space-y-3">
                                     <div className="flex items-center justify-between">
                                         <h3 className="font-semibold text-slate-800">Deposit Details</h3>
-                                        <button type="button" onClick={() => setStep(1)} className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
+                                        <button type="button" onClick={() => setStep(1)} className="text-[#028090] text-sm font-medium hover:underline flex items-center gap-1">
                                             <Edit2 className="w-3 h-3" /> Edit
                                         </button>
                                     </div>
@@ -477,7 +518,7 @@ export default function OnboardingPage() {
                                 <div className="bg-slate-50 rounded-xl p-5 space-y-3">
                                     <div className="flex items-center justify-between">
                                         <h3 className="font-semibold text-slate-800">Property Details</h3>
-                                        <button type="button" onClick={() => setStep(2)} className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
+                                        <button type="button" onClick={() => setStep(2)} className="text-[#028090] text-sm font-medium hover:underline flex items-center gap-1">
                                             <Edit2 className="w-3 h-3" /> Edit
                                         </button>
                                     </div>
@@ -509,23 +550,55 @@ export default function OnboardingPage() {
                                     </div>
                                 </div>
 
-                                {/* Offer Summary */}
+                                {/* Landlord & Agent Summary */}
+                                {(formData.landlordName || formData.agentName || formData.noticeDate) && (
+                                    <div className="bg-slate-50 rounded-xl p-5 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="font-semibold text-slate-800">Landlord & Agent</h3>
+                                            <button type="button" onClick={() => setStep(2)} className="text-[#028090] text-sm font-medium hover:underline flex items-center gap-1">
+                                                <Edit2 className="w-3 h-3" /> Edit
+                                            </button>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3 text-sm">
+                                            {formData.landlordName && (
+                                                <div>
+                                                    <span className="text-slate-500">Landlord</span>
+                                                    <p className="font-semibold text-slate-900">{formData.landlordName}</p>
+                                                </div>
+                                            )}
+                                            {formData.agentName && (
+                                                <div>
+                                                    <span className="text-slate-500">Agent</span>
+                                                    <p className="font-semibold text-slate-900">{formData.agentName}</p>
+                                                </div>
+                                            )}
+                                            {formData.noticeDate && (
+                                                <div>
+                                                    <span className="text-slate-500">Notice Date</span>
+                                                    <p className="font-semibold text-slate-900">{new Date(formData.noticeDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Risk Summary */}
                                 <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 p-6 text-white">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl" />
-                                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-500/20 rounded-full blur-2xl" />
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#028090]/20 rounded-full blur-2xl" />
+                                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#02C39A]/20 rounded-full blur-2xl" />
                                     <div className="relative">
-                                        <p className="text-sm font-medium text-slate-300 mb-4">Your Estimated Offer</p>
+                                        <p className="text-sm font-medium text-slate-300 mb-4">Deposit Risk Estimate</p>
                                         <div className="flex items-end justify-between">
                                             <div>
-                                                <p className="text-sm text-slate-400 mb-1">Cash to you today</p>
-                                                <p className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                                                    £{estimatedReturn.toLocaleString()}
+                                                <p className="text-sm text-slate-400 mb-1">Estimated deposit at risk</p>
+                                                <p className="text-4xl font-bold bg-gradient-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">
+                                                    £{estimatedRepairs.toLocaleString()}
                                                 </p>
                                             </div>
                                             <div className="text-right text-sm text-slate-400 space-y-1">
                                                 <p>Deposit: £{depositAmount.toLocaleString()}</p>
-                                                <p>Repairs: -£{estimatedRepairs}</p>
-                                                <p>Service (12%): -£{serviceFee}</p>
+                                                <p>Est. repairs: £{estimatedRepairs}</p>
+                                                <p>Potential recovery: £{estimatedReturn.toLocaleString()}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -543,6 +616,9 @@ export default function OnboardingPage() {
                                 <input type="hidden" name="paintingNeeded" value={formData.conditions.includes('painting') ? 'true' : 'false'} />
                                 <input type="hidden" name="holesNeeded" value={formData.conditions.includes('holes') ? 'true' : 'false'} />
                                 <input type="hidden" name="flooringNeeded" value={formData.conditions.includes('flooring') ? 'true' : 'false'} />
+                                <input type="hidden" name="landlordName" value={formData.landlordName} />
+                                <input type="hidden" name="agentName" value={formData.agentName} />
+                                <input type="hidden" name="noticeDate" value={formData.noticeDate} />
 
                                 {state?.error && (
                                     <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
@@ -568,7 +644,7 @@ export default function OnboardingPage() {
                                     <Button
                                         type="submit"
                                         disabled={isPending}
-                                        className="flex-[2] h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-blue-500/25"
+                                        className="flex-[2] h-12 bg-gradient-to-r from-[#028090] to-[#02C39A] hover:from-[#02a5b5] hover:to-[#04d9ad] text-white font-bold shadow-lg shadow-[#028090]/25"
                                     >
                                         {isPending ? (
                                             <>
@@ -576,7 +652,7 @@ export default function OnboardingPage() {
                                                 Processing...
                                             </>
                                         ) : (
-                                            'Get My Instant Offer'
+                                            'Submit for Assessment'
                                         )}
                                     </Button>
                                 </div>

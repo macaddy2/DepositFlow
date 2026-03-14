@@ -33,7 +33,7 @@ export default async function OfferPage() {
                 </div>
                 <h2 className="text-2xl font-bold text-slate-900">No Offer Yet</h2>
                 <p className="text-slate-500 mt-2 mb-6">We are still reviewing your application. Check back soon!</p>
-                <Link href="/onboarding" className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition">
+                <Link href="/onboarding" className="inline-flex items-center gap-2 bg-[#028090] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#026d7a] transition">
                     Start New Application
                 </Link>
             </div>
@@ -90,13 +90,13 @@ export default async function OfferPage() {
                     </div>
 
                     {/* Cash to You */}
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 mt-4">
+                    <div className="bg-gradient-to-br from-[#028090]/5 to-[#02C39A]/5 rounded-xl p-6 mt-4">
                         <div className="flex justify-between items-end">
                             <div>
                                 <span className="text-slate-600 font-medium">Cash to You Today</span>
                                 <p className="text-xs text-green-600 font-medium">No hidden fees</p>
                             </div>
-                            <span className="text-4xl font-bold text-blue-600">£{offer.advance_amount}</span>
+                            <span className="text-4xl font-bold text-[#028090]">£{offer.advance_amount}</span>
                         </div>
                     </div>
                 </div>
@@ -108,7 +108,7 @@ export default async function OfferPage() {
 
                 <div className="space-y-6">
                     <div className="flex gap-4">
-                        <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
+                        <div className="w-8 h-8 bg-[#028090]/10 text-[#028090] rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
                             1
                         </div>
                         <div>
@@ -118,7 +118,7 @@ export default async function OfferPage() {
                     </div>
 
                     <div className="flex gap-4">
-                        <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
+                        <div className="w-8 h-8 bg-[#028090]/10 text-[#028090] rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
                             2
                         </div>
                         <div>
@@ -128,7 +128,7 @@ export default async function OfferPage() {
                     </div>
 
                     <div className="flex gap-4">
-                        <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
+                        <div className="w-8 h-8 bg-[#028090]/10 text-[#028090] rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
                             3
                         </div>
                         <div>
@@ -170,7 +170,7 @@ export default async function OfferPage() {
 
             {/* Terms */}
             <p className="text-xs text-center text-slate-400">
-                By accepting, you agree to assign your deposit rights to DepositFlow via our Deed of Assignment
+                By accepting, you agree to assign your deposit rights to DepositGuard via our Deed of Assignment
             </p>
         </div>
     )
