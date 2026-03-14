@@ -1,7 +1,7 @@
-# DepositFlow — Railway Deployment Guide
+# DepositGuard — Railway Deployment Guide
 
 ## Prerequisites
-- GitHub repo: `macaddy2/DepositFlow` (already pushed)
+- GitHub repo: `macaddy2/DepositGuard` (already pushed)
 - [Railway](https://railway.app) account
 - Supabase project with schema applied
 - [Resend](https://resend.com) account + API key (for emails)
@@ -23,7 +23,7 @@ Run in the **Supabase SQL Editor** (Dashboard → SQL Editor → New Query):
 
 1. Go to [railway.app/new](https://railway.app/new)
 2. Click **Deploy from GitHub repo**
-3. Select `macaddy2/DepositFlow`
+3. Select `macaddy2/DepositGuard`
 4. Railway will auto-detect Next.js — confirm and deploy
 
 ---

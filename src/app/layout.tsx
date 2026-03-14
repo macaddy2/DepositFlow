@@ -1,20 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "DepositFlow — Get Your Deposit Back Instantly",
-  description: "DepositFlow advances your tenancy deposit today so you're never stuck paying double.",
+  title: "DepositGuard — Inspect, Repair & Recover",
+  description: "Don't lose your deposit. DepositGuard helps tenants submit video walkthroughs, get risk assessments, book repairs, and build evidence trails before the landlord inspection.",
 };
 
 export default function RootLayout({
@@ -24,10 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-slate-900`}
-      >
+      <body className="antialiased bg-white text-slate-900" style={{ fontFamily: "system-ui, -apple-system, Calibri, 'Segoe UI', sans-serif" }}>
         {children}
       </body>
     </html>

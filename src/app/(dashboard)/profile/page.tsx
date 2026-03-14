@@ -102,7 +102,7 @@ export default function ProfilePage() {
         return (
             <div className="flex items-center justify-center h-64">
                 <div className="flex flex-col items-center gap-4">
-                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                    <Loader2 className="w-8 h-8 animate-spin text-[#028090]" />
                     <p className="text-slate-500">Loading your profile...</p>
                 </div>
             </div>
@@ -114,7 +114,7 @@ export default function ProfilePage() {
             {/* Header */}
             <div className="flex items-center gap-6">
                 <Avatar className="h-20 w-20 border-4 border-white shadow-xl">
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-2xl font-bold">
+                    <AvatarFallback className="bg-gradient-to-br from-[#028090] to-[#02C39A] text-white text-2xl font-bold">
                         {profile.full_name ? profile.full_name[0].toUpperCase() : user?.email?.[0].toUpperCase() || 'U'}
                     </AvatarFallback>
                 </Avatar>
@@ -129,7 +129,7 @@ export default function ProfilePage() {
                     <div className="flex items-center gap-2 mt-2">
                         <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
                             <div
-                                className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
+                                className="h-full bg-gradient-to-r from-[#028090] to-[#02C39A] transition-all duration-500"
                                 style={{ width: `${completionPercentage}%` }}
                             />
                         </div>
@@ -142,8 +142,8 @@ export default function ProfilePage() {
             <Card className="border-0 shadow-lg overflow-hidden">
                 <CardHeader className="bg-slate-50 border-b">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-blue-100">
-                            <User className="w-5 h-5 text-blue-600" />
+                        <div className="p-2 rounded-lg bg-[#028090]/10">
+                            <User className="w-5 h-5 text-[#028090]" />
                         </div>
                         <div>
                             <CardTitle className="text-lg">Personal Information</CardTitle>
@@ -228,9 +228,9 @@ export default function ProfilePage() {
                         </div>
                     </div>
 
-                    <Alert className="bg-blue-50 border-blue-200">
-                        <Shield className="h-4 w-4 text-blue-600" />
-                        <AlertDescription className="text-blue-800">
+                    <Alert className="bg-[#028090]/5 border-[#028090]/20">
+                        <Shield className="h-4 w-4 text-[#028090]" />
+                        <AlertDescription className="text-[#1A2332]">
                             Your bank details are encrypted with AES-256 and only used to send your deposit advance. We never store card details.
                         </AlertDescription>
                     </Alert>
@@ -253,7 +253,7 @@ export default function ProfilePage() {
                 <Button
                     onClick={handleSave}
                     disabled={saving}
-                    className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold shadow-lg shadow-blue-500/25"
+                    className="w-full h-12 bg-gradient-to-r from-[#028090] to-[#02C39A] hover:from-[#02a5b5] hover:to-[#04d9ad] text-white font-semibold shadow-lg shadow-[#028090]/25"
                 >
                     {saving ? (
                         <>
