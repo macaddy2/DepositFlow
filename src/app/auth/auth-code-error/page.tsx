@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function AuthCodeError() {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-6">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-[#028090]/5 flex items-center justify-center p-6">
             <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
                 {/* Error Icon */}
                 <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
@@ -49,7 +49,7 @@ export default function AuthCodeError() {
                 <div className="space-y-3">
                     <Link
                         href="/login"
-                        className="block w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors"
+                        className="block w-full py-3 px-4 bg-[#028090] text-white font-semibold rounded-xl hover:bg-[#026d7a] transition-colors"
                     >
                         Try Signing In Again
                     </Link>

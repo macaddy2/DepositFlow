@@ -113,11 +113,31 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* DepositGuard V3 brand colours */
+:root {
+  --dg-primary: #028090;
+  --dg-primary-light: #03a5b5;
+  --dg-dark: #1A2332;
+  --dg-accent: #02C39A;
+  --dg-accent-light: #04d9ad;
+}
+
+@theme inline {
+  --color-dg-primary: var(--dg-primary);
+  --color-dg-primary-light: var(--dg-primary-light);
+  --color-dg-dark: var(--dg-dark);
+  --color-dg-accent: var(--dg-accent);
+  --color-dg-accent-light: var(--dg-accent-light);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: Georgia, 'Times New Roman', serif;
   }
 }
