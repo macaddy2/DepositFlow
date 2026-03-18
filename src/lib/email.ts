@@ -1,6 +1,10 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+let _resend: Resend | null = null
+function getResend() {
+    if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY)
+    return _resend
+}
 
 const FROM = 'DepositFlow <no-reply@depositflow.co.uk>'
 
@@ -22,7 +26,7 @@ export async function sendOfferCreatedEmail({ to, name, advanceAmount, offerExpi
         weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
     })
 
-    return resend.emails.send({
+    return getResend().emails.send({
         from: FROM,
         to,
         subject: `Your DepositFlow offer: £${advanceAmount.toLocaleString()} is ready`,
@@ -53,7 +57,7 @@ export async function sendOfferCreatedEmail({ to, name, advanceAmount, offerExpi
 }
 
 export async function sendDeedSignedEmail({ to, name, advanceAmount }: DeedSignedParams) {
-    return resend.emails.send({
+    return getResend().emails.send({
         from: FROM,
         to,
         subject: 'Deed signed — your funds are on their way',
