@@ -3,7 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { sendOfferCreatedEmail, sendDeedSignedEmail } from '@/lib/email'
+import { sendDeedSignedEmail } from '@/lib/email'
 
 export async function signDeed(offerId: string, signatureData: string) {
     const supabase = await createClient()
@@ -21,8 +21,7 @@ export async function signDeed(offerId: string, signatureData: string) {
             *,
             tenancies (
                 user_id,
-                deposit_amount,
-                profiles ( email, full_name )
+                profiles ( full_name )
             )
         `)
         .eq('id', offerId)
@@ -62,19 +61,14 @@ export async function signDeed(offerId: string, signatureData: string) {
         throw new Error('Failed to record signature: ' + updateError.message)
     }
 
-    // 4. Send confirmation email (best-effort)
-    try {
-        const tenancy = offer.tenancies as { deposit_amount: number; profiles?: { email?: string; full_name?: string } | null } | null
-        const profile = tenancy?.profiles
-        if (user.email) {
-            await sendDeedSignedEmail({
-                to: user.email,
-                name: profile?.full_name ?? user.email,
-                advanceAmount: offer.advance_amount,
-            })
-        }
-    } catch (emailErr) {
-        console.error('Failed to send deed-signed email:', emailErr)
+    // 4. Send confirmation email (best-effort, non-blocking)
+    if (user.email) {
+        const tenancy = offer.tenancies as { user_id: string; profiles?: { full_name?: string } | null } | null
+        sendDeedSignedEmail({
+            to: user.email,
+            name: tenancy?.profiles?.full_name ?? user.email,
+            advanceAmount: offer.advance_amount,
+        }).catch((err) => console.error('Failed to send deed-signed email:', err))
     }
 
     revalidatePath('/dashboard')

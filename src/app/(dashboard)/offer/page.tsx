@@ -58,7 +58,7 @@ export default async function OfferPage() {
                     </div>
 
                     <h1 className="text-2xl font-bold text-slate-900">Your Instant Offer</h1>
-                    <p className={`font-medium ${isExpired ? 'text-red-500' : isAccepted ? 'text-green-600' : 'text-green-600'}`}>
+                    <p className={`font-medium ${isExpired ? 'text-red-500' : 'text-green-600'}`}>
                         {isExpired ? 'Offer expired' : isAccepted ? 'Accepted ✓' : 'Available immediately'}
                     </p>
                 </div>

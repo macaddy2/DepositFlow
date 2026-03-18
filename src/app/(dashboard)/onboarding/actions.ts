@@ -108,6 +108,8 @@ export async function submitApplication(prevState: ActionState, formData: FormDa
 
     const { estimatedRepairCost, serviceFee, advanceAmount } = calculateOffer(data.depositAmount, conditions)
 
+    const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
+
     const { error: offerError } = await supabase
         .from('offers')
         .insert({
@@ -116,24 +118,21 @@ export async function submitApplication(prevState: ActionState, formData: FormDa
             service_fee: serviceFee,
             advance_amount: advanceAmount,
             status: 'pending',
-            expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString() // 48 hours
+            expires_at: expiresAt,
         })
 
     if (offerError) {
         return { error: offerError.message, success: false }
     }
 
-    // 4. Send offer notification email (best-effort)
-    try {
-        const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
-        await sendOfferCreatedEmail({
-            to: user.email!,
-            name: user.email!,
+    // 4. Send offer notification email (best-effort, non-blocking)
+    if (user.email) {
+        sendOfferCreatedEmail({
+            to: user.email,
+            name: user.email,
             advanceAmount,
             offerExpiresAt: expiresAt,
-        })
-    } catch (emailErr) {
-        console.error('Failed to send offer-created email:', emailErr)
+        }).catch((err) => console.error('Failed to send offer-created email:', err))
     }
 
     return { error: null, success: true, tenancyId: tenancy.id }
